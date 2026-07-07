@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ofaruk/mcp-x-ray/internal/llmreview"
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/report"
+	"github.com/o-faruk/mcp-x-ray/internal/llmreview"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/report"
 )
 
 // verdictServer replies with a fixed verdict for every request, keyed by

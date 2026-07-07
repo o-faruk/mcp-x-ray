@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ofaruk/mcp-x-ray/internal/diff"
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/sandbox"
+	"github.com/o-faruk/mcp-x-ray/internal/diff"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/sandbox"
 )
 
 // TestRun_Fixtures is the Phase 2 regression/DoD test: a fixture that

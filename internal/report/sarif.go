@@ -70,7 +70,7 @@ func WriteSARIF(w io.Writer, r *Report) error {
 				Tool: sarifTool{
 					Driver: sarifDriver{
 						Name:           "mcp-x-ray",
-						InformationURI: "https://github.com/ofaruk/mcp-x-ray",
+						InformationURI: "https://github.com/o-faruk/mcp-x-ray",
 						Version:        "0.1.0",
 						Rules:          sarifRules(r.Findings),
 					},

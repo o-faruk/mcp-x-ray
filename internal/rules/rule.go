@@ -5,8 +5,8 @@
 package rules
 
 import (
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/report"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/report"
 )
 
 // Rule inspects a manifest and returns zero or more findings. Implementations

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/rules"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/rules"
 )
 
 // TestFixtures is the Phase 1 regression suite: every testdata/clean fixture

@@ -1,6 +1,6 @@
 package rules
 
-import "github.com/ofaruk/mcp-x-ray/internal/parser"
+import "github.com/o-faruk/mcp-x-ray/internal/parser"
 
 // describedItem is a single tool/prompt/resource description, normalized so
 // text-scanning rules don't each need their own manifest-walking loop.

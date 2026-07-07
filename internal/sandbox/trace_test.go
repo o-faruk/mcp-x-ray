@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ofaruk/mcp-x-ray/internal/sandbox"
+	"github.com/o-faruk/mcp-x-ray/internal/sandbox"
 )
 
 const sampleTrace = `12345 14:23:01.100000 execve("/usr/local/bin/node", ["node", "server.js"], 0x7fff /* 8 vars */) = 0

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/report"
-	"github.com/ofaruk/mcp-x-ray/internal/rules"
-	"github.com/ofaruk/mcp-x-ray/internal/sandbox"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/report"
+	"github.com/o-faruk/mcp-x-ray/internal/rules"
+	"github.com/o-faruk/mcp-x-ray/internal/sandbox"
 )
 
 const (

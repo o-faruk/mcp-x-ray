@@ -13,9 +13,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/ofaruk/mcp-x-ray/internal/llmreview"
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/rules"
+	"github.com/o-faruk/mcp-x-ray/internal/llmreview"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/rules"
 )
 
 type target struct {

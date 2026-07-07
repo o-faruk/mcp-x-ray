@@ -3,8 +3,8 @@ package rules_test
 import (
 	"testing"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/rules"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/rules"
 )
 
 func TestHiddenContentRule_ZeroWidthTriggers(t *testing.T) {

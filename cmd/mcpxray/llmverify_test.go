@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ofaruk/mcp-x-ray/internal/llmreview"
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/rules"
+	"github.com/o-faruk/mcp-x-ray/internal/llmreview"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/rules"
 )
 
 // TestLLMVerify_Fixtures checks the live --llm-verify path against a real

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
 )
 
 func TestSynthesizeArgs(t *testing.T) {

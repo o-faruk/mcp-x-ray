@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
 )
 
 // Result is what a sandboxed run produced: the raw strace log (parsed

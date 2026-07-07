@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ofaruk/mcp-x-ray/internal/llmreview"
+	"github.com/o-faruk/mcp-x-ray/internal/llmreview"
 )
 
 func TestClient_Review_Confirmed(t *testing.T) {

@@ -3,10 +3,10 @@ package diff_test
 import (
 	"testing"
 
-	"github.com/ofaruk/mcp-x-ray/internal/diff"
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/report"
-	"github.com/ofaruk/mcp-x-ray/internal/sandbox"
+	"github.com/o-faruk/mcp-x-ray/internal/diff"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/report"
+	"github.com/o-faruk/mcp-x-ray/internal/sandbox"
 )
 
 func TestCompare_UndeclaredNetworkEgress(t *testing.T) {

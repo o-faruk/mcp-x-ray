@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/report"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/report"
 )
 
 // Verify reviews every Reviewable finding against the manifest's own

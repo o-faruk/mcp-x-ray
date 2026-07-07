@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/ofaruk/mcp-x-ray/internal/report"
+	"github.com/o-faruk/mcp-x-ray/internal/report"
 )
 
 func TestWriteJSON_EmptyFindingsAreArrayNotNull(t *testing.T) {

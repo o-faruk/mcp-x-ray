@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
 )
 
 // fixtureManifest is the convention a local testdata directory uses to

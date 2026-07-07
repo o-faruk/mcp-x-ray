@@ -1,4 +1,4 @@
-module github.com/ofaruk/mcp-x-ray
+module github.com/o-faruk/mcp-x-ray
 
 go 1.26.4
 

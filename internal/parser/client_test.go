@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
 )
 
 func TestFetchManifest_EchoFixture(t *testing.T) {

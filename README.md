@@ -1,6 +1,6 @@
 # mcp-x-ray
 
-[![CI](https://github.com/ofaruk/mcp-x-ray/actions/workflows/ci.yml/badge.svg)](https://github.com/ofaruk/mcp-x-ray/actions/workflows/ci.yml)
+[![CI](https://github.com/o-faruk/mcp-x-ray/actions/workflows/ci.yml/badge.svg)](https://github.com/o-faruk/mcp-x-ray/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Offline security scanner for MCP (Model Context Protocol) servers. Run it
@@ -55,11 +55,11 @@ annotations).
 ## Install
 
 ```
-go install github.com/ofaruk/mcp-x-ray/cmd/mcpxray@latest
+go install github.com/o-faruk/mcp-x-ray/cmd/mcpxray@latest
 ```
 
 Or grab a static binary from the
-[releases page](https://github.com/ofaruk/mcp-x-ray/releases).
+[releases page](https://github.com/o-faruk/mcp-x-ray/releases).
 
 ## Usage
 
@@ -97,7 +97,7 @@ mcpxray scan --runtime --llm-verify ./some-mcp-server
 ## GitHub Action
 
 ```yaml
-- uses: ofaruk/mcp-x-ray@main
+- uses: o-faruk/mcp-x-ray@main
   with:
     target: ./path/to/mcp-server
     runtime: 'true'   # Docker is available on GitHub-hosted runners

@@ -3,9 +3,9 @@ package rules
 import (
 	"fmt"
 
-	"github.com/ofaruk/mcp-x-ray/internal/parser"
-	"github.com/ofaruk/mcp-x-ray/internal/registry"
-	"github.com/ofaruk/mcp-x-ray/internal/report"
+	"github.com/o-faruk/mcp-x-ray/internal/parser"
+	"github.com/o-faruk/mcp-x-ray/internal/registry"
+	"github.com/o-faruk/mcp-x-ray/internal/report"
 )
 
 // typosquatMaxDistance is the maximum edit distance still considered a
