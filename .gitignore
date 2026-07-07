@@ -1,0 +1,4 @@
+/mcpxray
+/bin/
+*.test
+node_modules/
