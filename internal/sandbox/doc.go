@@ -1,5 +1,7 @@
-// Package sandbox will launch a target MCP server under a capability-scoped
-// WASI sandbox (deny-all network/filesystem by default), exercise its
-// declared tools with synthetic inputs, and record what it actually does.
-// Phase 2. Empty for now.
+// Package sandbox launches a target MCP server inside a locked-down Docker
+// container (deny-all network, read-only rootfs, no capabilities) traced by
+// strace, and reports what it actually did — network connections, file
+// opens, and subprocess spawns — regardless of whether the container's
+// restrictions caused those attempts to fail. See docs/decisions.md for why
+// this replaced the originally-planned WASI approach.
 package sandbox

@@ -14,14 +14,6 @@ import (
 // description claims.
 var riskyParamSubstrings = []string{"shell", "command", "cmd", "exec", "script", "eval", "subprocess"}
 
-// disclosureKeywords are words that, if present in a tool's description,
-// mean the tool is being upfront about executing commands/code — so a risky
-// parameter name isn't a surprise.
-var disclosureKeywords = []string{
-	"shell", "command", "execute", "executes", "executing", "run arbitrary",
-	"runs arbitrary", "system command", "subprocess", "script",
-}
-
 // ExcessiveCapabilityRule flags tools whose input schema accepts a
 // shell/command/script-shaped parameter that their description gives no
 // hint of — i.e. the declared capability (per the description) is
@@ -34,7 +26,7 @@ func (rule ExcessiveCapabilityRule) Check(m *parser.Manifest) []report.Finding {
 	var findings []report.Finding
 	for _, t := range m.Tools {
 		key, ok := riskyParam(t.InputSchema)
-		if !ok || discloses(t.Description) {
+		if !ok || DisclosesShellExecution(t.Description) {
 			continue
 		}
 		findings = append(findings, report.Finding{
@@ -69,14 +61,4 @@ func riskyParam(schema json.RawMessage) (string, bool) {
 		}
 	}
 	return "", false
-}
-
-func discloses(description string) bool {
-	lower := strings.ToLower(description)
-	for _, kw := range disclosureKeywords {
-		if strings.Contains(lower, kw) {
-			return true
-		}
-	}
-	return false
 }

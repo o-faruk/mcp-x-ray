@@ -1,11 +1,11 @@
-# Static rule set → OWASP ASI mapping
+# Findings → OWASP ASI mapping
 
-Seven rules, chosen for precision over coverage per the Phase 1 brief: each
-one targets a narrow, well-evidenced attack shape (drawn from real
-tool-poisoning PoCs validated in Phase 0) rather than broad heuristics that
-would false-positive on ordinary imperative tool descriptions ("you must
-call X before Y" is extremely common in legitimate tools and must never be
-flagged on its own).
+Seven static rules (Phase 1) plus three runtime capability-divergence
+findings (Phase 2), chosen for precision over coverage: each one targets a
+narrow, well-evidenced attack shape rather than broad heuristics that would
+false-positive on ordinary imperative tool descriptions ("you must call X
+before Y" is extremely common in legitimate tools and must never be flagged
+on its own).
 
 | Rule ID | Title | OWASP ASI | Severity | Package |
 |---|---|---|---|---|
@@ -16,6 +16,9 @@ flagged on its own).
 | MCPX-0005 | Undisclosed command/shell-execution parameter | ASI03 — Privilege Compromise / Excessive Agency | high | `internal/rules/excessive_capability.go` |
 | MCPX-0006 | Package name closely resembles a known MCP server | ASI05 — Supply Chain / Dependency Attacks | high | `internal/rules/typosquat.go` |
 | MCPX-0007 | Zero-width/invisible unicode or long whitespace run in description | ASI06 — Memory & Context Poisoning | critical/high | `internal/rules/hidden_content.go` |
+| MCPX-0008 | Network egress not declared | ASI02 — Tool Misuse | critical | `internal/diff/diff.go` |
+| MCPX-0009 | File access not declared | ASI03 — Privilege Compromise / Excessive Agency | high/critical | `internal/diff/diff.go` |
+| MCPX-0010 | Subprocess execution not declared | ASI03 — Privilege Compromise / Excessive Agency | critical | `internal/diff/diff.go` |
 
 ## Rationale per rule
 
@@ -79,11 +82,31 @@ as explicit `\u` rune literals rather than pasted glyphs: a security
 scanner's source shouldn't itself contain the exact payload shape it's
 built to detect.
 
+**MCPX-0008/0009/0010 (Runtime capability divergence).** Phase 2's whole
+premise: launch the server in a locked-down, `strace`-traced Docker
+container (see `docs/decisions.md` for why Docker+strace replaced the
+originally-planned WASI approach), call every declared tool with
+synthesized arguments, and compare what actually happened — connect(),
+openat(), execve() syscalls — against a "declared" baseline inferred from
+the same disclosure-keyword heuristics MCPX-0005 uses (`internal/rules`
+exports `DisclosesNetwork`, `DisclosesFileAccess`,
+`DisclosesShellExecution` for exactly this reuse). Undeclared network
+egress maps to ASI02 (matches the network-egress example in the original
+findings-schema spec exactly); undeclared file access and subprocess
+execution both map to ASI03, since either is a tool doing more than the
+scope it disclosed. A file-access finding is bumped from high to critical
+when the path matches `rules.IsSensitivePath` (the same credential/secret
+path list MCPX-0002 uses) — undeclared access to `~/.ssh` is a different
+severity than undeclared access to some scratch file.
+
 ## Coverage gaps (by design, for now)
 
 ASI04 (Resource & Rate Limit Exhaustion), ASI07 (Misaligned/Deceptive
 Behaviors), ASI08 (Repudiation & Untraceability), and ASI10 (Human Trust
-Exploitation) have no static rule yet. All four are naturally runtime
-concerns — you can't observe resource exhaustion, deceptive *behavior* (as
-opposed to deceptive *description*), or repudiation from static text alone.
-Phase 2's capability-diff pass is where these get addressed.
+Exploitation) still have no rule. ASI04 would need resource-limit
+observation the sandbox doesn't do yet (CPU/memory/wall-clock ceilings);
+ASI07/ASI10 need semantic judgment of *behavior* against stated intent,
+which is a natural fit for the Phase 3 local-LLM classifier rather than a
+regex/syscall-list rule; ASI08 is about audit-trail integrity, which is more
+a property mcp-x-ray's own logging should have than something to detect in
+a target.

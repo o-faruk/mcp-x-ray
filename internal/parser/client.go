@@ -10,8 +10,9 @@ import (
 	"sync/atomic"
 )
 
-// Client speaks MCP over stdio to a single subprocess, purely for
-// introspection: it does not call any tools, only the *_list methods.
+// Client speaks MCP over stdio to a single subprocess. The static pass only
+// uses the *_list methods; the sandboxed runtime pass (internal/sandbox)
+// also uses CallTool to actually exercise a tool.
 type Client struct {
 	cmd    *exec.Cmd
 	stdin  io.WriteCloser
@@ -128,6 +129,41 @@ func (c *Client) readResponse() (*rpcResponse, error) {
 	return nil, io.ErrUnexpectedEOF
 }
 
+// Initialize performs the MCP handshake (initialize + the initialized
+// notification) and returns the server's self-reported info. Must be
+// called once before any other method.
+func (c *Client) Initialize() (ServerInfo, error) {
+	initResult, err := c.call("initialize", initializeParams{
+		ProtocolVersion: mcpProtocolVersion,
+		Capabilities:    map[string]any{},
+		ClientInfo:      ServerInfo{Name: "mcp-x-ray", Version: "0.1.0"},
+	})
+	if err != nil {
+		return ServerInfo{}, fmt.Errorf("initialize: %w", err)
+	}
+	var initialized struct {
+		ServerInfo ServerInfo `json:"serverInfo"`
+	}
+	if err := json.Unmarshal(initResult, &initialized); err != nil {
+		return ServerInfo{}, fmt.Errorf("parsing initialize result: %w", err)
+	}
+	if err := c.notify("notifications/initialized", struct{}{}); err != nil {
+		return ServerInfo{}, fmt.Errorf("notifications/initialized: %w", err)
+	}
+	return initialized.ServerInfo, nil
+}
+
+// CallTool invokes a declared tool with the given arguments. Used by the
+// sandboxed runtime pass to trigger a tool's actual behavior; the static
+// pass never calls this. The result is returned as-is — callers that only
+// care about triggering side effects, not the result, can ignore it.
+func (c *Client) CallTool(name string, args map[string]any) (json.RawMessage, error) {
+	return c.call("tools/call", map[string]any{
+		"name":      name,
+		"arguments": args,
+	})
+}
+
 // FetchManifest performs the MCP initialize handshake and collects the
 // server's declared tools, prompts, and resources. Servers that don't
 // implement prompts/resources are tolerated: those lists are left empty.
@@ -138,25 +174,12 @@ func FetchManifest(ctx context.Context, t Target) (*Manifest, error) {
 	}
 	defer c.Close()
 
-	initResult, err := c.call("initialize", initializeParams{
-		ProtocolVersion: mcpProtocolVersion,
-		Capabilities:    map[string]any{},
-		ClientInfo:      ServerInfo{Name: "mcp-x-ray", Version: "0.1.0"},
-	})
+	serverInfo, err := c.Initialize()
 	if err != nil {
-		return nil, fmt.Errorf("initialize: %w", err)
-	}
-	var initialized struct {
-		ServerInfo ServerInfo `json:"serverInfo"`
-	}
-	if err := json.Unmarshal(initResult, &initialized); err != nil {
-		return nil, fmt.Errorf("parsing initialize result: %w", err)
-	}
-	if err := c.notify("notifications/initialized", struct{}{}); err != nil {
-		return nil, fmt.Errorf("notifications/initialized: %w", err)
+		return nil, err
 	}
 
-	manifest := &Manifest{Server: initialized.ServerInfo}
+	manifest := &Manifest{Server: serverInfo}
 
 	if result, err := c.call("tools/list", struct{}{}); err == nil {
 		var parsed struct {

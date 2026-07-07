@@ -23,7 +23,7 @@ Treat the JSON output schema as a public API contract — once agreed, don't cha
 
 **Go**, not Rust or TypeScript. Reasoning: Go's `os/exec` + syscall access is simpler than Rust for the sandbox process-monitoring work, single static binary distribution matters for a security CLI (no runtime to install), and gVisor/WASI tooling both have solid Go bindings. If Rust is meaningfully better for a specific piece — e.g. the WASM sandbox host — flag it and make that one component Rust with a Go CLI shelling out to it, but default to Go everywhere else.
 
-Sandbox isolation: start with **WASI (via wasmtime's Go embedding)** for the runtime pass rather than full microVMs. Rationale: MCP servers are typically Node/Python processes, not arbitrary native binaries, so a capability-scoped WASI sandbox is lower setup cost than Firecracker for an MVP, and still gives us real network/filesystem capability denial with an audit trail. If a target server can't run under WASI (native deps, etc.), fall back to a `strace`/`dtrace`-based passive observation mode and clearly label those findings as "observed, not sandboxed."
+Sandbox isolation: **Docker + strace**, not WASI. The original plan called for WASI via wasmtime's Go embedding, reasoning that MCP servers are typically Node/Python processes so a capability-scoped WASI sandbox would be lower setup cost than full microVMs. Verified before writing sandbox code (Phase 2 kickoff) and that premise doesn't hold: Node has no path to compile the runtime itself to WASI (its `node:wasi` module runs WASI guests *from* Node, the opposite direction), and CPython's `wasm32-wasi` build still lacks networking/threading/native-extension support, so the official Python MCP SDK (which depends on the Rust-native `pydantic-core`) won't run under it. Since virtually every real MCP server is an ordinary Node or Python process, WASI would apply to essentially none of them. Pivoted to launching the target inside a locked-down Docker container (`--network none`, `--read-only` rootfs, `--cap-drop=ALL`) with `strace -f` running inside — it still records attempted `connect()`/`openat()`/`execve()` calls even when the container blocks them, giving both real deny-by-default enforcement and full observability in one mechanism. Full rationale in `docs/decisions.md`.
 
 ## Architecture
 
@@ -32,7 +32,7 @@ mcp-x-ray/
   cmd/mcpxray/          — CLI entrypoint (cobra)
   internal/parser/      — MCP manifest parsing (tools, prompts, resources)
   internal/rules/       — static rule engine + OWASP ASI mapping
-  internal/sandbox/     — WASI runtime harness, capability policy, syscall/behavior capture
+  internal/sandbox/     — Docker+strace runtime harness, capability policy, syscall/behavior capture
   internal/diff/        — declared-vs-observed comparison logic
   internal/report/      — JSON + SARIF serialization
   internal/registry/    — known-good package name list for typosquat detection
@@ -105,10 +105,9 @@ If it turns out one of them already does fused static+runtime+offline analysis w
 **Definition of done for this phase:** running `mcpxray scan ./testdata/malicious-1` produces the expected findings, and running it against a clean fixture produces zero findings (no false positives on the clean set — that's the bar, not "catches everything").
 
 ### Phase 2 — sandbox runtime pass
-- WASI harness that launches the target server with a capability policy (deny-all network/filesystem by default, log every attempted syscall)
+- Docker+strace harness that launches the target server with a capability policy (deny-all network/filesystem by default via `--network none` + read-only rootfs, log every attempted syscall via `strace -f`) — see docs/decisions.md for why this replaced the originally-planned WASI approach
 - Exercise each declared tool with synthetic/fuzzed inputs
 - Capability diff logic (declared vs observed)
-- Fallback strace-based mode for servers that can't run under WASI, clearly flagged as lower-confidence in the output
 
 **Definition of done:** catches at least one capability divergence in a deliberately-planted test fixture (e.g. a fixture tool that declares no network access but opens one).
 

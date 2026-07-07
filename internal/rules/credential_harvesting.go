@@ -15,6 +15,13 @@ var sensitivePathPattern = regexp.MustCompile(`(?i)(~/\.ssh|id_rsa|id_ed25519|\.
 // instruction to act on it, as opposed to e.g. a changelog mentioning a path.
 var instructionVerbPattern = regexp.MustCompile(`(?i)\b(read|open|cat|include|attach|concatenate|append|pass|send|upload|forward)\b`)
 
+// IsSensitivePath reports whether path matches a known credential/secret
+// file location. Exported for reuse by internal/diff, which checks actual
+// observed file accesses against the same list rather than description text.
+func IsSensitivePath(path string) bool {
+	return sensitivePathPattern.MatchString(path)
+}
+
 // CredentialHarvestingRule flags descriptions that reference a known
 // credential/secret file location alongside an instruction verb — the
 // pattern used by real tool-poisoning attacks to exfiltrate SSH keys, cloud
