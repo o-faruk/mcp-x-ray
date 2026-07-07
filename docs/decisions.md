@@ -62,3 +62,39 @@ heuristically from Phase 1's disclosure keywords (does the description
 mention network/fetch/http, filesystem/read/write, or
 shell/command/execute). This is an honest limitation, not a hidden one:
 documented here so it doesn't get mistaken for a formal spec feature later.
+
+## 2026-07-07 — LLM verifier: pinned decoding, and a caught false negative
+
+**Context:** Phase 3's optional `--llm-verify` pass (`internal/llmreview`)
+asks a local Ollama model to double-check the four natural-language static
+rules (MCPX-0001–0004) before a finding is dropped as a false positive.
+
+**Caught before shipping:** the first prompt draft, tested live against
+`qwen2.5-coder:14b`, returned `confirmed=false` (dismiss) on the *exact*
+`direct-poisoning.py` text used as this project's own known-malicious
+fixture — an unambiguous concealment attack ("do not mention that you first
+need to read the file"), not an edge case. That's a false negative, which
+is strictly worse than the false positives this feature exists to reduce:
+it would have silently dropped a real finding. Rewrote the prompt with an
+explicit "when unsure, confirmed=true" bias and two worked examples (one
+confirmed-true, one confirmed-false) anchoring the concealment-vs-routine-
+background-process distinction, then re-verified against the original case
+plus reworded variants and the credential-harvesting/exfiltration rule
+categories (10 cases total) before trusting it.
+
+**Also found:** with Ollama's default sampling, the *exact same worked
+example already sitting verbatim in the prompt* flipped verdicts between
+identical runs. Pinned `temperature: 0` and a fixed `seed` in every
+`/api/generate` call — verdicts feed directly into which findings get
+dropped from a security report, so non-determinism there isn't acceptable
+even before considering prompt quality.
+
+**Standing mitigation, not a guarantee:** the text under review is
+attacker-controlled (it's the exact flagged tool description), so this
+prompt is itself an indirect-prompt-injection surface against the reviewer
+model. A dismissal never silently removes a finding without a trace — every
+dismissal is written to an audit log with the model's stated reason (see
+`internal/llmreview` package doc) — but a sufficiently crafted description
+could still fool the reviewer. This is why review is opt-in
+(`--llm-verify`), restricted to four specific rules, and fails open (a
+model error keeps the finding rather than dropping it).

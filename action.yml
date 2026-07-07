@@ -1,0 +1,62 @@
+name: 'mcp-x-ray scan'
+description: 'Offline security scan of an MCP server: prompt-injection/typosquat/capability-disclosure static rules, plus an optional sandboxed runtime pass.'
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  target:
+    description: 'Path to the MCP server directory to scan (must contain mcpx.json)'
+    required: true
+  format:
+    description: 'Output format: json or sarif'
+    default: 'sarif'
+  output:
+    description: 'Path to write the report to'
+    default: 'mcpxray-results.sarif'
+  runtime:
+    description: 'Also run the sandboxed runtime pass (needs Docker; available by default on GitHub-hosted runners)'
+    default: 'false'
+  llm-verify:
+    description: 'Double-check ambiguous findings against a local Ollama model (needs a reachable Ollama endpoint; off by default since hosted runners do not have one)'
+    default: 'false'
+  upload-sarif:
+    description: 'Automatically upload SARIF output to GitHub code scanning'
+    default: 'true'
+  go-version:
+    description: 'Go version to build mcpxray with'
+    default: '1.26'
+
+outputs:
+  report:
+    description: 'Path to the written report file'
+    value: ${{ inputs.output }}
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.go-version }}
+
+    - name: Build mcpxray
+      shell: bash
+      run: go build -o "${{ github.action_path }}/mcpxray" "${{ github.action_path }}/cmd/mcpxray"
+
+    - name: Run mcpxray scan
+      shell: bash
+      run: |
+        args=(scan "${{ inputs.target }}" --format "${{ inputs.format }}" --output "${{ inputs.output }}")
+        if [ "${{ inputs.runtime }}" = "true" ]; then
+          args+=(--runtime)
+        fi
+        if [ "${{ inputs.llm-verify }}" = "true" ]; then
+          args+=(--llm-verify)
+        fi
+        "${{ github.action_path }}/mcpxray" "${args[@]}"
+
+    - name: Upload SARIF to code scanning
+      if: ${{ inputs.upload-sarif == 'true' && inputs.format == 'sarif' }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.output }}

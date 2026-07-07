@@ -45,24 +45,44 @@ type Location struct {
 }
 
 type Finding struct {
-	ID       string   `json:"id"`
-	Pass     Pass     `json:"pass"`
-	Severity Severity `json:"severity"`
-	OwaspASI OwaspASI `json:"owasp_asi"`
-	Title    string   `json:"title"`
-	Detail   string   `json:"detail"`
-	Location Location `json:"location"`
-	Declared any      `json:"declared"`
-	Observed any      `json:"observed"`
+	ID        string     `json:"id"`
+	Pass      Pass       `json:"pass"`
+	Severity  Severity   `json:"severity"`
+	OwaspASI  OwaspASI   `json:"owasp_asi"`
+	Title     string     `json:"title"`
+	Detail    string     `json:"detail"`
+	Location  Location   `json:"location"`
+	Declared  any        `json:"declared"`
+	Observed  any        `json:"observed"`
+	LLMReview *LLMReview `json:"llm_review,omitempty"`
+}
+
+// LLMReview records that an optional local-LLM pass double-checked a
+// finding prone to natural-language ambiguity. Confirmed findings keep
+// this attached for transparency; see internal/llmreview for why dismissed
+// findings are never silently removed based on this alone.
+type LLMReview struct {
+	Model     string `json:"model"`
+	Confirmed bool   `json:"confirmed"`
+	Reason    string `json:"reason"`
 }
 
 type ScanMeta struct {
-	Target     string    `json:"target"`
-	Source     string    `json:"source"`
-	Transport  string    `json:"transport"`
-	StartedAt  time.Time `json:"started_at"`
-	DurationMs int64     `json:"duration_ms"`
-	RiskScore  int       `json:"risk_score"`
+	Target          string           `json:"target"`
+	Source          string           `json:"source"`
+	Transport       string           `json:"transport"`
+	StartedAt       time.Time        `json:"started_at"`
+	DurationMs      int64            `json:"duration_ms"`
+	RiskScore       int              `json:"risk_score"`
+	LLMVerification *LLMVerification `json:"llm_verification,omitempty"`
+}
+
+// LLMVerification summarizes an --llm-verify run at the scan level.
+type LLMVerification struct {
+	Model     string `json:"model"`
+	Reviewed  int    `json:"reviewed"`
+	Confirmed int    `json:"confirmed"`
+	Dismissed int    `json:"dismissed"`
 }
 
 type CapabilityDiff struct {

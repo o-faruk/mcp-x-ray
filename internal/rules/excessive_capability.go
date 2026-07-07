@@ -4,15 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/ofaruk/mcp-x-ray/internal/parser"
 	"github.com/ofaruk/mcp-x-ray/internal/report"
 )
 
-// riskyParamSubstrings are input-schema property names suggesting a tool
+// riskyParamWords are input-schema property name words suggesting a tool
 // can execute arbitrary commands/code, not just do the narrow thing its
-// description claims.
-var riskyParamSubstrings = []string{"shell", "command", "cmd", "exec", "script", "eval", "subprocess"}
+// description claims. Matched as whole words after tokenizing camelCase/
+// snake_case, not as substrings — a naive substring check flags a
+// perfectly ordinary "description" property, which contains "script" as a
+// literal substring (caught by the Phase 3 public-server benchmark).
+var riskyParamWords = map[string]bool{
+	"shell": true, "command": true, "cmd": true, "exec": true,
+	"execute": true, "script": true, "eval": true, "subprocess": true,
+}
 
 // ExcessiveCapabilityRule flags tools whose input schema accepts a
 // shell/command/script-shaped parameter that their description gives no
@@ -53,12 +60,31 @@ func riskyParam(schema json.RawMessage) (string, bool) {
 		return "", false
 	}
 	for key := range parsed.Properties {
-		lower := strings.ToLower(key)
-		for _, sub := range riskyParamSubstrings {
-			if strings.Contains(lower, sub) {
+		for _, word := range tokenizeParamName(key) {
+			if riskyParamWords[word] {
 				return key, true
 			}
 		}
 	}
 	return "", false
+}
+
+// tokenizeParamName splits a property name on underscores/hyphens/dots and
+// camelCase boundaries into lowercase words, e.g. "shellCommand" and
+// "shell_command" both become ["shell", "command"].
+func tokenizeParamName(name string) []string {
+	var b strings.Builder
+	runes := []rune(name)
+	for i, r := range runes {
+		switch {
+		case r == '_' || r == '-' || r == '.':
+			b.WriteRune(' ')
+		case i > 0 && unicode.IsUpper(r) && (unicode.IsLower(runes[i-1]) || unicode.IsDigit(runes[i-1])):
+			b.WriteRune(' ')
+			b.WriteRune(r)
+		default:
+			b.WriteRune(r)
+		}
+	}
+	return strings.Fields(strings.ToLower(b.String()))
 }

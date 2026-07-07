@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"sync/atomic"
 )
@@ -28,6 +29,10 @@ type Target struct {
 	Dir     string
 	Command string
 	Args    []string
+	// Env holds additional "KEY=VALUE" entries (many real servers need an
+	// API token/env var just to start). Appended to the current process's
+	// environment rather than replacing it; nil means inherit unchanged.
+	Env []string
 }
 
 // Start launches the target as a subprocess and prepares stdio pipes. The
@@ -35,6 +40,9 @@ type Target struct {
 func Start(ctx context.Context, t Target) (*Client, error) {
 	cmd := exec.CommandContext(ctx, t.Command, t.Args...)
 	cmd.Dir = t.Dir
+	if len(t.Env) > 0 {
+		cmd.Env = append(os.Environ(), t.Env...)
+	}
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
