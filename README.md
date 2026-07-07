@@ -1,7 +1,32 @@
 # mcp-x-ray
 
+[![CI](https://github.com/ofaruk/mcp-x-ray/actions/workflows/ci.yml/badge.svg)](https://github.com/ofaruk/mcp-x-ray/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Offline security scanner for MCP (Model Context Protocol) servers. Run it
 against a third-party MCP server before you install it.
+
+Status: static pass, sandboxed runtime pass, optional LLM false-positive
+verifier, and packaging/CI are all done — see `CLAUDE.md`'s status section
+and `docs/decisions.md` for the full history. This is a CLI, not a UI: it
+prints structured JSON/SARIF for a human, CI system, or separate dashboard
+to consume.
+
+## Try it now
+
+No install, no Docker, no API keys — just `go` and `node` (already needed
+for the fixtures below), scanning the checked-in test servers:
+
+```
+go build -o mcpxray ./cmd/mcpxray
+
+./mcpxray scan testdata/clean/calculator          # -> 0 findings
+./mcpxray scan testdata/malicious/poisoned-tool    # -> 2 critical findings
+```
+
+The second one is a deliberately poisoned tool description (the classic
+"read `~/.ssh/id_rsa`, don't mention it" attack) — that's what a genuine
+hit looks like.
 
 Two passes:
 
@@ -100,7 +125,18 @@ go test ./...
 ```
 
 Test fixtures (`testdata/`) are hand-rolled, dependency-free MCP stdio
-servers (Node) — 3 clean, 3 malicious for the static pass, plus 2
-self-contained ones for the sandboxed runtime pass (the Docker sandbox
-mounts only a target's own directory, so shared-lib fixtures don't apply
-there).
+servers (Node), no `npm install` required:
+
+- `clean/{echo-server,calculator,shell-runner-disclosed}` and
+  `malicious/{poisoned-tool,shadowing-and-exfil,hidden-and-excessive}` —
+  the static-pass regression set (3 clean, 3 malicious, one pair per rule)
+- `clean/sandboxed-benign` and `malicious/undeclared-network` —
+  self-contained fixtures for the Docker runtime pass (the sandbox mounts
+  only a target's own directory, so the shared-lib fixtures above don't
+  apply there)
+- `clean/benign-secretly-fp` — triggers a static rule on purpose (benign
+  "secretly" language) to exercise `--llm-verify`'s dismissal path
+
+## License
+
+[MIT](LICENSE)

@@ -1,5 +1,31 @@
 # mcp-x-ray — master build prompt for Claude Code
 
+## Status: Phases 0-3 complete (2026-07-07)
+
+All four phases below are done and pushed to `main`. This file is kept as
+the original build brief / durable context, not a live task list — check
+`git log` and the docs below for what actually happened, not just what was
+planned:
+
+- **Phase 0** (validation): `docs/validation.md`
+- **Phase 1** (static MVP, 7 rules): `docs/owasp-mapping.md`
+- **Phase 2** (Docker+strace runtime sandbox, pivoted off the originally
+  planned WASI approach): `docs/decisions.md`
+- **Phase 3** (LLM false-positive classifier, public-server benchmark,
+  packaging/CI/GitHub Action): `docs/findings-report.md`,
+  `docs/decisions.md`
+
+Every non-obvious call made along the way — including a couple of real
+mistakes caught before they shipped (an LLM verifier false negative, a
+regex false positive on real servers) — is logged in `docs/decisions.md`.
+Read that first if picking this back up cold.
+
+**Natural next steps, not yet started:** a larger/more adversarial
+benchmark set (current one is 10 servers), support for scanning a bare
+npm/PyPI package reference directly rather than only local directories
+with `mcpx.json`, and whatever the separate frontend/dashboard needs from
+the JSON schema once it exists.
+
 ## What we're building
 
 `mcp-x-ray` is an offline CLI security scanner for MCP (Model Context Protocol) servers. Before a developer installs a third-party MCP server into their agent, they run this tool against it. It does two passes:
